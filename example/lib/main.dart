@@ -35,7 +35,7 @@ class WheelExample extends StatelessWidget {
             child: CircleListScrollView(
               physics: CircleFixedExtentScrollPhysics(),
               axis: Axis.vertical,
-              itemExtent: 80,
+              itemSize: Size(80, 80),
               children: List.generate(20, _buildItem),
               radius: MediaQuery.of(context).size.width * 0.6,
               onSelectedItemChanged: (int index) => print('Current index: $index'),
