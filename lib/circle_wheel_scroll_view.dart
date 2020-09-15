@@ -627,56 +627,52 @@ class _CircleListScrollViewState extends State<CircleListScrollView> {
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (ScrollNotification notification) {
-        if (notification is ScrollStartNotification && notification.dragDetails != null) {
-          dragStartPosition = notification.dragDetails.globalPosition;
-        } else if (notification is ScrollEndNotification &&
-            notification.dragDetails != null &&
-            dragStartPosition != null &&
-            notification.dragDetails.velocity.pixelsPerSecond.dx <= kMinFlingVelocity) {
-          final FixedExtentMetrics metrics = notification.metrics as FixedExtentMetrics;
-          final selectedIndex = ((dragStartPosition.dx +
-                      metrics.pixels -
-                      scrollController.position.viewportDimension / 2 +
-                      widget.itemSize.width / 2) /
-                  widget.itemSize.width)
-              .floor();
-          if (widget.onItemTap != null && metrics.itemIndex != selectedIndex) {
-            widget.onItemTap(selectedIndex);
-          }
-          dragStartPosition = null;
-        } else if (notification.depth == 0 &&
-            widget.onSelectedItemChanged != null &&
-            notification is ScrollUpdateNotification &&
-            notification.metrics is FixedExtentMetrics) {
-          final FixedExtentMetrics metrics = notification.metrics as FixedExtentMetrics;
-          final int currentItemIndex = metrics.itemIndex;
-          if (currentItemIndex != _lastReportedItemIndex) {
-            _lastReportedItemIndex = currentItemIndex;
-            final int trueIndex = widget.childDelegate.trueIndexOf(currentItemIndex);
-            widget.onSelectedItemChanged(trueIndex);
-            dragStartPosition = null;
-          }
+    double width = MediaQuery.of(context).size.width;
+    return GestureDetector(
+      onTapUp: (details) {
+        final FixedExtentScrollController controller = widget.controller as FixedExtentScrollController;
+        final selectedIndex = ((details.localPosition.dx + controller.offset - width / 2 + widget.itemSize.width / 2) /
+                widget.itemSize.width)
+            .floor();
+        if (widget.onItemTap != null && controller.selectedItem != selectedIndex) {
+          widget.onItemTap(selectedIndex);
         }
-        return false;
       },
-      child: _FixedExtentScrollable(
-        axisDirection: widget.axis == Axis.horizontal ? AxisDirection.right : AxisDirection.down,
-        controller: scrollController,
-        physics: widget.physics,
-        itemSize: widget.itemSize,
-        viewportBuilder: (BuildContext context, ViewportOffset offset) {
-          return CircleListViewport(
-            axis: widget.axis,
-            radius: widget.radius,
-            itemSize: widget.itemSize,
-            clipToSize: widget.clipToSize,
-            renderChildrenOutsideViewport: widget.renderChildrenOutsideViewport,
-            offset: offset,
-            childDelegate: widget.childDelegate,
-          );
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (ScrollNotification notification) {
+          if (notification is ScrollStartNotification && notification.dragDetails != null) {
+            dragStartPosition = notification.dragDetails.globalPosition;
+          } else if (notification.depth == 0 &&
+              widget.onSelectedItemChanged != null &&
+              notification is ScrollUpdateNotification &&
+              notification.metrics is FixedExtentMetrics) {
+            final FixedExtentMetrics metrics = notification.metrics as FixedExtentMetrics;
+            final int currentItemIndex = metrics.itemIndex;
+            if (currentItemIndex != _lastReportedItemIndex) {
+              _lastReportedItemIndex = currentItemIndex;
+              final int trueIndex = widget.childDelegate.trueIndexOf(currentItemIndex);
+              widget.onSelectedItemChanged(trueIndex);
+            }
+          }
+          return false;
         },
+        child: _FixedExtentScrollable(
+          axisDirection: widget.axis == Axis.horizontal ? AxisDirection.right : AxisDirection.down,
+          controller: scrollController,
+          physics: widget.physics,
+          itemSize: widget.itemSize,
+          viewportBuilder: (BuildContext context, ViewportOffset offset) {
+            return CircleListViewport(
+              axis: widget.axis,
+              radius: widget.radius,
+              itemSize: widget.itemSize,
+              clipToSize: widget.clipToSize,
+              renderChildrenOutsideViewport: widget.renderChildrenOutsideViewport,
+              offset: offset,
+              childDelegate: widget.childDelegate,
+            );
+          },
+        ),
       ),
     );
   }
