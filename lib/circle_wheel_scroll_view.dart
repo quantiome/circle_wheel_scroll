@@ -456,7 +456,7 @@ class CircleFixedExtentScrollPhysics extends ScrollPhysics {
     if (settlingItemIndex == metrics.itemIndex) {
       return SpringSimulation(
         SpringDescription.withDampingRatio(
-          mass: 0.7,
+          mass: 0.8,
           stiffness: 100.0,
           ratio: 0.6,
         ),
@@ -635,6 +635,7 @@ class _CircleListScrollViewState extends State<CircleListScrollView> {
                 widget.itemSize.width)
             .floor();
         if (widget.onItemTap != null && controller.selectedItem != selectedIndex) {
+          _lastReportedItemIndex = selectedIndex;
           widget.onItemTap(selectedIndex);
         }
       },
@@ -644,7 +645,7 @@ class _CircleListScrollViewState extends State<CircleListScrollView> {
             dragStartPosition = notification.dragDetails.globalPosition;
           } else if (notification.depth == 0 &&
               widget.onSelectedItemChanged != null &&
-              notification is ScrollUpdateNotification &&
+              notification is ScrollEndNotification &&
               notification.metrics is FixedExtentMetrics) {
             final FixedExtentMetrics metrics = notification.metrics as FixedExtentMetrics;
             final int currentItemIndex = metrics.itemIndex;
